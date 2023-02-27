@@ -38,11 +38,12 @@ func main() {
 
 func process(infile string, outfile string, overview bool) {
 	cfg := repparser.Config{
-		Commands:    true,
+		Commands:    true, // must be true for computed
 		MapData:     true,
-		MapGraphics: true,
-		Debug:       true,
+		MapGraphics: false,
+		Debug:       false,
 	}
+
 	r, err := repparser.ParseFileConfig(infile, cfg)
 	if err != nil {
 		fmt.Printf("Failed to parse replay: %v\n", err)
@@ -61,6 +62,11 @@ func process(infile string, outfile string, overview bool) {
 	if overview {
 		printOverview(r)
 	}
+	r.Compute()
+	r.MapData.Tiles = nil
+	r.MapData.MineralFields = nil
+	r.MapData.Geysers = nil
+	r.Commands = nil
 
 	enc := json.NewEncoder(destination)
 	enc.SetIndent("", "  ")
