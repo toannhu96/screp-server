@@ -22,3 +22,4 @@ wire_gen.go
 .vscode
 mocks/
 test.env
+tmp/
