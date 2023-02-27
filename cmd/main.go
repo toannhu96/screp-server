@@ -63,6 +63,7 @@ func process(infile string, outfile string, overview bool) {
 	}
 
 	enc := json.NewEncoder(destination)
+	enc.SetIndent("", "  ")
 	var valueToEncode any = r
 	custom := map[string]any{}
 	// If there are custom data, wrap (embed) the replay in a struct that holds the custom data too:
