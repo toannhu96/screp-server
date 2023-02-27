@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -45,22 +46,35 @@ func process(infile string, outfile string, overview bool) {
 	r, err := repparser.ParseFileConfig(infile, cfg)
 	if err != nil {
 		fmt.Printf("Failed to parse replay: %v\n", err)
-		panic(err)
+		return
 	}
 
+	var destination = os.Stdout
 	foutput, err := os.Create(outfile)
 	if err != nil {
 		fmt.Printf("Failed to create output file: %v\n", err)
-		panic(err)
+		return
 	}
 	defer foutput.Close()
-
-	if _, err := foutput.Write(r.MapData.Debug.Data); err != nil {
-		fmt.Printf("Failed to write map data: %v\n", err)
-	}
+	destination = foutput
 
 	if overview {
 		printOverview(r)
+	}
+
+	enc := json.NewEncoder(destination)
+	var valueToEncode any = r
+	custom := map[string]any{}
+	// If there are custom data, wrap (embed) the replay in a struct that holds the custom data too:
+	if len(custom) > 0 {
+		valueToEncode = struct {
+			*rep.Replay
+			Custom map[string]any
+		}{r, custom}
+	}
+	if err := enc.Encode(valueToEncode); err != nil {
+		fmt.Printf("Failed to encode output: %v\n", err)
+		return
 	}
 }
 
